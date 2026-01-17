@@ -7,7 +7,7 @@ const Footer = () => {
       className="
         mt-30
         border-t
-        border-neutral-200 dark:border-neutral-500
+        border-neutral-200 dark:border-neutral-700
         bg-neutral-50 dark:bg-black
       "
     >

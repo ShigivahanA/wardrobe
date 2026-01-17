@@ -37,7 +37,7 @@ const HeroSection = () => {
             text-4xl sm:text-5xl md:text-6xl
             font-semibold
             tracking-tight
-            leading-[1.05] dark:text-neutral-500
+            leading-[1.05] dark:text-neutral-400
           "
         >
           Dress with

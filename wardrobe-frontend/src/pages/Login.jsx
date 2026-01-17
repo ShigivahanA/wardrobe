@@ -90,7 +90,7 @@ const Login = () => {
     try {
       await requestOtp(form.email)
       setStep('verify')
-      setCooldown(30)
+      setCooldown(60)
       setForm(p => ({ ...p, otp: '' }))
       showToast('OTP sent to your email', 'success')
     } catch {
@@ -230,7 +230,7 @@ const Login = () => {
                   w-full text-sm text-center
                   transition
                   disabled:opacity-50
-                  disabled:cursor-not-allowed
+                  disabled:cursor-not-allowed dark:text-neutral-500
                 "
               >
                 {cooldown > 0
