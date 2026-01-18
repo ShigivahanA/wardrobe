@@ -1,32 +1,13 @@
 import app from './app.js'
-import env from './config/env.js'
-import connectDB from './config/db.js'
+import connectDB from '../src/config/db.js'
 
-/* ======================
-   Start Server
-====================== */
+let isConnected = false
 
-const startServer = async () => {
-  await connectDB()
+export default async function handler(req, res) {
+  if (!isConnected) {
+    await connectDB()
+    isConnected = true
+  }
 
-  const server = app.listen(env.port, () => {
-    console.log(`🚀 Server running on port ${env.port}`)
-  })
-
-  /* ======================
-     Graceful Shutdown
-  ====================== */
-
-  process.on('unhandledRejection', (err) => {
-    console.error('❌ UNHANDLED REJECTION')
-    console.error(err)
-    server.close(() => process.exit(1))
-  })
-
-  process.on('SIGTERM', () => {
-    console.log('👋 SIGTERM received. Shutting down gracefully.')
-    server.close(() => process.exit(0))
-  })
+  return app(req, res)
 }
-
-startServer()
