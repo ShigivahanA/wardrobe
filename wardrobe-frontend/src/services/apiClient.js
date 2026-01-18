@@ -39,7 +39,7 @@ const clearRefreshToken = () => {
    Core request handler
 ====================== */
 
-const request = async (url, options = {}, retry = true) => {
+const request = async (url, options = {}) => {
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {})
@@ -55,26 +55,20 @@ const request = async (url, options = {}, retry = true) => {
     headers
   })
 
-  // Success
   if (response.ok) {
-    const data = await response.json()
-    return data
+    return response.json()
   }
 
-  // // Unauthorized → try refresh once
-  // if (response.status === 401 && retry) {
-  //   const refreshed = await refreshAccessToken()
-  //   if (refreshed) {
-  //     return request(url, options, false)
-  //   }
-  // }
+  // 🔥 GLOBAL SESSION INVALIDATION
+  if (response.status === 401) {
+    forceLogout()
+    throw new Error('Session expired')
+  }
 
-  // Other errors
   const errorData = await response.json().catch(() => ({}))
-  const message = errorData.message || 'Request failed'
-
-  throw new Error(message)
+  throw new Error(errorData.message || 'Request failed')
 }
+
 
 /* ======================
    Refresh token flow

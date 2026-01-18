@@ -1,10 +1,10 @@
+import User from '../models/User.js'
 import AppError from '../utils/AppError.js'
 import { verifyAccessToken } from '../utils/jwt.js'
 
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   let token
 
-  // Expect: Authorization: Bearer <token>
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
@@ -18,12 +18,24 @@ const auth = (req, res, next) => {
 
   try {
     const decoded = verifyAccessToken(token)
+
+    // 🔒 CRITICAL: verify session still exists
+    const user = await User.findOne({
+      _id: decoded.userId,
+      'sessions.refreshTokenId': decoded.sid
+    }).select('_id')
+
+    if (!user) {
+      return next(new AppError('Session expired', 401))
+    }
+
     req.user = {
-        id: decoded.userId,
-        sessionId: decoded.sid
-      }
+      id: decoded.userId,
+      sessionId: decoded.sid
+    }
+
     next()
-  } catch (error) {
+  } catch {
     return next(new AppError('Invalid or expired token', 401))
   }
 }
