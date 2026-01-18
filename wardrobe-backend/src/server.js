@@ -67,7 +67,7 @@ app.get('/', (req, res) => {
    ❌ DO NOT prefix /api here
    Vercel already provides /api
 ====================== */
-app.use('/', routes)
+app.use('/api', routes)
 
 /* ======================
    404 Handler
