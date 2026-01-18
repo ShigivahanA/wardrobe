@@ -1,30 +1,21 @@
-import fs from 'fs-extra'
-import path from 'path'
+import archiver from 'archiver'
 import fetch from 'node-fetch'
+import { PassThrough } from 'stream'
 
 import User from '../models/User.js'
 import WardrobeItem from '../models/WardrobeItem.js'
 import Outfit from '../models/Outfit.js'
-
-import {sendEmail} from './mailer.js'
-import { createPDF } from './pdf.js'
-import { zipDirectory } from './zip.js'
-
-const TMP_DIR = path.resolve('tmp/exports')
+import { exportDataEmail } from './emailTemplates.js'
+import { sendEmail } from './mailer.js'
+import { pdfToBuffer } from './pdf.js'
 
 export const exportUserDataAndEmail = async (userId) => {
   const user = await User.findById(userId)
   if (!user) return
 
-  const exportId = `wardrobe-export-${Date.now()}`
-  const baseDir = path.join(TMP_DIR, exportId)
-
-  await fs.ensureDir(baseDir)
-
   /* ======================
-     1. Fetch data
+     Fetch data
   ====================== */
-
   const wardrobe = await WardrobeItem.find({ userId }).lean()
   const outfits = await Outfit.find({ userId })
     .populate('items.top items.bottom items.footwear')
@@ -37,91 +28,90 @@ export const exportUserDataAndEmail = async (userId) => {
   }
 
   /* ======================
-     2. Write JSON
+     ZIP stream
   ====================== */
+  const zipStream = new PassThrough()
+  const archive = archiver('zip', { zlib: { level: 9 } })
 
-  await fs.writeJson(path.join(baseDir, 'profile.json'), profile, { spaces: 2 })
-  await fs.writeJson(path.join(baseDir, 'wardrobe.json'), wardrobe, { spaces: 2 })
-  await fs.writeJson(path.join(baseDir, 'outfits.json'), outfits, { spaces: 2 })
+  archive.pipe(zipStream)
 
   /* ======================
-     3. PDFs
+     JSON files
   ====================== */
-
-  await createPDF(path.join(baseDir, 'profile.pdf'), doc => {
-    doc.fontSize(16).text('Profile').moveDown()
-    doc.fontSize(12)
-    doc.text(`Name: ${profile.name}`)
-    doc.text(`Email: ${profile.email}`)
-    doc.text(`Joined: ${profile.createdAt}`)
-  })
-
-  await createPDF(path.join(baseDir, 'wardrobe.pdf'), doc => {
-    doc.fontSize(16).text('Wardrobe').moveDown()
-    wardrobe.forEach(item => {
-      doc
-        .fontSize(12)
-        .moveDown()
-        .text(`Category: ${item.category}`)
-        .text(`Brand: ${item.brand || '-'}`)
-        .text(`Size: ${item.size || '-'}`)
-        .text(`Colors: ${(item.colors || []).join(', ')}`)
-    })
-  })
-
-  await createPDF(path.join(baseDir, 'outfits.pdf'), doc => {
-    doc.fontSize(16).text('Outfits').moveDown()
-    outfits.forEach(o => {
-      doc
-        .fontSize(12)
-        .moveDown()
-        .text(`Occasion: ${o.occasion || '-'}`)
-        .text(`Wear count: ${o.wearCount}`)
-        .text(`Last worn: ${o.lastWornAt}`)
-    })
-  })
+  archive.append(JSON.stringify(profile, null, 2), { name: 'profile.json' })
+  archive.append(JSON.stringify(wardrobe, null, 2), { name: 'wardrobe.json' })
+  archive.append(JSON.stringify(outfits, null, 2), { name: 'outfits.json' })
 
   /* ======================
-     4. Images
+     PDFs
   ====================== */
+  archive.append(
+    await pdfToBuffer(doc => {
+      doc.fontSize(16).text('Profile').moveDown()
+      doc.fontSize(12)
+      doc.text(`Name: ${profile.name}`)
+      doc.text(`Email: ${profile.email}`)
+      doc.text(`Joined: ${profile.createdAt}`)
+    }),
+    { name: 'profile.pdf' }
+  )
 
-  const imageDir = path.join(baseDir, 'images')
-  await fs.ensureDir(imageDir)
+  archive.append(
+    await pdfToBuffer(doc => {
+      doc.fontSize(16).text('Wardrobe').moveDown()
+      wardrobe.forEach(item => {
+        doc.moveDown().fontSize(12)
+        doc.text(`Category: ${item.category}`)
+        doc.text(`Brand: ${item.brand || '-'}`)
+        doc.text(`Size: ${item.size || '-'}`)
+        doc.text(`Colors: ${(item.colors || []).join(', ')}`)
+      })
+    }),
+    { name: 'wardrobe.pdf' }
+  )
 
+  archive.append(
+    await pdfToBuffer(doc => {
+      doc.fontSize(16).text('Outfits').moveDown()
+      outfits.forEach(o => {
+        doc.moveDown().fontSize(12)
+        doc.text(`Occasion: ${o.occasion || '-'}`)
+        doc.text(`Wear count: ${o.wearCount}`)
+        doc.text(`Last worn: ${o.lastWornAt}`)
+      })
+    }),
+    { name: 'outfits.pdf' }
+  )
+
+  /* ======================
+     Images (streamed)
+  ====================== */
   for (const item of wardrobe) {
     if (!item.imageUrl) continue
+
     const res = await fetch(item.imageUrl)
-    const buffer = await res.buffer()
-    await fs.writeFile(path.join(imageDir, `${item._id}.jpg`), buffer)
+    archive.append(res.body, {
+      name: `images/${item._id}.jpg`
+    })
   }
 
-  /* ======================
-     5. Zip
-  ====================== */
-
-  const zipPath = path.join(TMP_DIR, `${exportId}.zip`)
-  await zipDirectory(baseDir, zipPath)
+  await archive.finalize()
 
   /* ======================
-     6. Email
+     Email
   ====================== */
+const email = exportDataEmail(user.name)
 
-  await sendMail({
-    to: user.email,
-    subject: 'Your Wardrobe data export',
-    text: 'Attached is your complete wardrobe export.',
-    attachments: [
-      {
-        filename: 'wardrobe-export.zip',
-        path: zipPath
-      }
-    ]
-  })
-
-  /* ======================
-     7. Cleanup
-  ====================== */
-
-  await fs.remove(baseDir)
-  await fs.remove(zipPath)
+await sendEmail({
+  to: user.email,
+  subject: email.subject,
+  text: email.text,
+  html: email.html,
+  attachments: [
+    {
+      filename: 'wardrobe-export.zip',
+      content: zipStream
+    }
+  ]
+})
 }

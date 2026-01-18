@@ -639,3 +639,89 @@ export const changePasswordOtpEmail = (otp) => {
 `
   }
 }
+
+export const exportDataEmail = (name = '') => ({
+  subject: 'Your Threadly data export is ready',
+  text: `Hi${name ? ` ${name}` : ''},
+
+Your Threadly wardrobe data export is ready.
+
+We’ve attached a ZIP file containing:
+- Your profile information
+- Wardrobe items
+- Outfits
+- Associated images
+
+If you didn’t request this export, you can safely ignore this email.
+
+— Threadly Team
+`,
+
+  html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Threadly data export</title>
+</head>
+<body style="margin:0;padding:0;background:#f7f7f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Arial,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+<tr>
+<td align="center" style="padding:48px 16px;">
+
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+style="max-width:480px;background:#ffffff;border-radius:20px;padding:40px 32px;box-shadow:0 20px 40px rgba(0,0,0,0.08);">
+
+<tr>
+<td align="center" style="padding-bottom:28px;">
+<img
+  src="https://res.cloudinary.com/dax0gizdq/image/upload/v1768669039/logoo_kngfmc.png"
+  alt="Threadly"
+  width="120"
+  style="display:block;opacity:0.9;"
+/>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding-bottom:16px;">
+<h2 style="margin:0;font-size:20px;font-weight:600;color:#111;">
+Your data export is ready${name ? `, ${name}` : ''}
+</h2>
+</td>
+</tr>
+
+<tr>
+<td align="center">
+<p style="margin:0;font-size:14px;color:#666;max-width:360px;line-height:1.6;">
+As requested, we’ve prepared a complete export of your Threadly data.
+The ZIP file attached to this email includes your profile, wardrobe items,
+outfits, and related images.
+</p>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding-top:20px;">
+<p style="margin:0;font-size:13px;color:#777;max-width:360px;line-height:1.6;">
+If you didn’t request this export, no action is required.
+Your account remains secure.
+</p>
+</td>
+</tr>
+
+</table>
+
+<p style="margin-top:24px;font-size:11px;color:#aaa;">
+© ${new Date().getFullYear()} Threadly
+</p>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
+`
+})

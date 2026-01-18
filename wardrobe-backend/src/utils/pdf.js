@@ -1,14 +1,13 @@
-import fs from 'fs-extra'
 import PDFDocument from 'pdfkit'
 
-export const createPDF = (filePath, writer) =>
+export const pdfToBuffer = (writer) =>
   new Promise(resolve => {
     const doc = new PDFDocument({ margin: 40 })
-    const stream = fs.createWriteStream(filePath)
+    const chunks = []
 
-    doc.pipe(stream)
+    doc.on('data', chunk => chunks.push(chunk))
+    doc.on('end', () => resolve(Buffer.concat(chunks)))
+
     writer(doc)
     doc.end()
-
-    stream.on('finish', resolve)
   })
