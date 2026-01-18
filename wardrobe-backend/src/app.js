@@ -8,6 +8,8 @@ import errorHandler from './middleware/error.js'
 import AppError from './utils/AppError.js'
 
 const app = express()
+app.set('trust proxy', 1)
+
 
 /* ======================
    Global Middleware
@@ -33,6 +35,14 @@ app.use(generalLimiter)
 /* ======================
    Routes
 ====================== */
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Threadly API running'
+  })
+})
+
 
 app.use('/api', routes)
 
