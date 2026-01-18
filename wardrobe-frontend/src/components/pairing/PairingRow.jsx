@@ -70,7 +70,6 @@ const PairingRow = ({ title, items = [], onChange }) => {
      Pointer (touch + mouse) handlers
   ====================================================== */
   const onPointerDown = (e) => {
-    e.preventDefault()
     setIsDragging(true)
     startXRef.current = e.clientX
     lastXRef.current = e.clientX
@@ -132,6 +131,7 @@ const PairingRow = ({ title, items = [], onChange }) => {
           className={`
             flex items-center
             will-change-transform
+            touch-pan-y
             ${isDragging
               ? 'transition-none'
               : 'transition-transform duration-500 ease-[cubic-bezier(.22,.61,.36,1)]'}
