@@ -4,6 +4,7 @@ import profileService from '../services/profileService'
 import ProfileSkeleton from '../components/profile/ProfileSkeleton'
 import useToast from '../hooks/useToast'
 import Spinner from '../components/ui/Spinner'
+import { Eye, EyeOff } from 'lucide-react'
 
 const Profile = () => {
   const { user, logout,currentSessionId  } = useAuth()
@@ -366,30 +367,24 @@ const Profile = () => {
 
         <div className="space-y-4">
           <Field label="Current password">
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={e => setCurrentPassword(e.target.value)}
-              className={inputClass}
-            />
+            <PasswordInput
+    value={currentPassword}
+    onChange={e => setCurrentPassword(e.target.value)}
+  />
           </Field>
 
           <Field label="New password">
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className={inputClass}
-            />
+            <PasswordInput
+    value={password}
+    onChange={e => setPassword(e.target.value)}
+  />
           </Field>
 
           <Field label="Confirm new password">
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className={inputClass}
-            />
+            <PasswordInput
+    value={confirmPassword}
+    onChange={e => setConfirmPassword(e.target.value)}
+  />
           </Field>
         </div>
 
@@ -557,7 +552,48 @@ const Field = ({ label, children }) => (
 const inputClass = `
   w-full rounded-xl
   border border-neutral-200 dark:border-neutral-700
-  bg-white dark:bg-neutral-900 dark:text-neutral-500
+  bg-white dark:bg-neutral-900 dark:text-neutral-100
   px-3 py-2 text-sm
   focus:outline-none focus:ring-2 focus:ring-black/10
 `
+
+const PasswordInput = ({
+  value,
+  onChange,
+  placeholder,
+  disabled = false
+}) => {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="relative">
+      <input
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={`
+          ${inputClass}
+          pr-10
+          text-neutral-900 dark:text-neutral-100
+        `}
+      />
+
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => setVisible(v => !v)}
+        className="
+          absolute right-3 top-1/2 -translate-y-1/2
+          text-neutral-400 dark:text-neutral-500
+          hover:text-neutral-700 dark:hover:text-neutral-300
+          transition
+        "
+        aria-label={visible ? 'Hide password' : 'Show password'}
+      >
+        {visible ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  )
+}

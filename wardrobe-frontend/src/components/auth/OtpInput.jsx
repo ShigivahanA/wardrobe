@@ -67,10 +67,18 @@ const OtpInput = ({ value, onChange, disabled }) => {
           onChange={(e) => handleChange(e, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
           className="
-            w-12 h-12 
-            text-center text-lg font-semibold
-            rounded-lg border
-            bg-white dark:bg-neutral-900 transition
+           w-12 h-12
+  text-center text-lg font-semibold
+  rounded-lg border
+  bg-white dark:bg-neutral-900
+  text-neutral-900 dark:text-neutral-100
+  placeholder:text-neutral-400 dark:placeholder:text-neutral-500
+  border-neutral-300 dark:border-neutral-700
+  outline-none
+  transition
+  focus:border-black dark:focus:border-white
+  focus:ring-1 focus:ring-black dark:focus:ring-white
+  disabled:opacity-50
           "
         />
       ))}
