@@ -18,6 +18,7 @@ import wardrobeService from '../../src/services/wardrobeService'
 import type { WardrobeCategory,WardrobeSeason,WardrobeOccasion } from '../../src/services/wardrobeService'
 import ImageStage from '@/src/components/upload/ImageStage'
 import { useTheme } from '@/src/theme/ThemeProvider'
+import ExtractedColors from '@/src/components/upload/ExtractedColors'
 type UploadMetaDraft = {
   category: WardrobeCategory | null
   size: string
@@ -68,27 +69,36 @@ export default function UploadScreen() {
 
   /* Upload */
   const handleUpload = async () => {
-    if (!image) return
+  if (!image) return
 
-    try {
-      setLoading(true)
-      const signature = await getUploadSignature()
-      const result = await uploadToCloudinary(image, signature)
+  try {
+    setLoading(true)
+    const signature = await getUploadSignature()
+    const result = await uploadToCloudinary(image, signature)
 
-      setUploaded({
-        url: result.secure_url,
-        publicId: result.public_id,
-      })
+    const extractedColors =
+      result?.colors?.map((c: [string, number]) => c[0]) ?? []
 
-      Haptics.notificationAsync(
-        Haptics.NotificationFeedbackType.Success
-      )
-    } catch (e: any) {
-      Alert.alert('Upload failed', e.message)
-    } finally {
-      setLoading(false)
-    }
+    setUploaded({
+      url: result.secure_url,
+      publicId: result.public_id,
+    })
+
+    // ✅ inject extracted colors into metadata
+    setMeta(prev => ({
+      ...prev,
+      colors: extractedColors,
+    }))
+
+    Haptics.notificationAsync(
+      Haptics.NotificationFeedbackType.Success
+    )
+  } catch (e: any) {
+    Alert.alert('Upload failed', e.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   /* Save */
   const handleSave = async () => {
@@ -206,6 +216,19 @@ export default function UploadScreen() {
                 .springify()
                 .damping(14)}
             >
+
+              <ExtractedColors
+        colors={meta.colors}
+        onRemove={(color) =>
+          setMeta({
+            ...meta,
+            colors: meta.colors.filter(c => c !== color),
+          })
+        }
+        onManualPick={() => {
+          // open manual picker modal (next step)
+        }}
+      />
               {/* Metadata */}
               <View style={[styles.card, { borderColor: colors.border }]}>
                 <MetadataForm meta={meta} setMeta={setMeta} />

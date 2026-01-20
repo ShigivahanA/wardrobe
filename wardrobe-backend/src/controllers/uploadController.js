@@ -16,7 +16,9 @@ const uploadParams = {
   timestamp,
   folder: `wardrobe/${req.user.id}`,
   colors: true, 
-  transformation: 'e_background_removal'
+  transformation: [
+  { effect: 'background_removal' }
+]
 }
 
 
