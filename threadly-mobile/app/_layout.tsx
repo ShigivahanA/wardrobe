@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 import { ThemeProvider as AppThemeProvider, useTheme } from '@/src/theme/ThemeProvider'
+import { ToastProvider } from '@/src/components/Toast/ToastProvider'
 
 function NavigationTheme() {
   const { theme } = useTheme()
@@ -24,7 +25,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppThemeProvider>
+        <ToastProvider>
         <NavigationTheme />
+        </ToastProvider>
       </AppThemeProvider>
     </GestureHandlerRootView>
   )

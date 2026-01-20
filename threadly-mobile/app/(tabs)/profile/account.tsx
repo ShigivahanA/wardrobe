@@ -8,7 +8,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import * as Haptics from 'expo-haptics'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
@@ -20,16 +20,19 @@ import { spacing } from '@/src/theme/spacing'
 import profileService from '@/src/services/profileService'
 import authService from '@/src/services/authService'
 import PrimaryButton from '@/src/components/auth/PrimaryButton'
+import ProfileHeader from '@/src/components/Profile/ProfileHeader'
+import { useToast } from '@/src/components/Toast/ToastProvider'
+
+
 
 export default function AccountScreen() {
-  const insets = useSafeAreaInsets()
   const router = useRouter()
   const { theme } = useTheme()
   const colors = theme === 'dark' ? darkColors : lightColors
+  const toast = useToast()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [sessions, setSessions] = useState<any[]>([])
@@ -42,6 +45,7 @@ export default function AccountScreen() {
       try {
         const res = await profileService.getProfile()
         if (!mounted) return
+
         setName(res.name)
         setEmail(res.email)
         setSessions(res.sessions || [])
@@ -68,6 +72,7 @@ export default function AccountScreen() {
       Haptics.notificationAsync(
         Haptics.NotificationFeedbackType.Success
       )
+      toast.show('Profile updated successfully', 'success')
     } catch {
       Alert.alert('Error', 'Failed to update profile')
     } finally {
@@ -105,211 +110,175 @@ export default function AccountScreen() {
   }
 
   if (loading) {
-    return <View style={{ flex: 1, backgroundColor: colors.background }} />
+    return (
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.background }}
+      />
+    )
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* ================= Header ================= */}
-      <View
-        style={[
-          styles.header,
-          {
-            paddingTop: insets.top,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={10}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={colors.textPrimary}
-          />
-        </Pressable>
-
-        <Text
-          style={[
-            styles.headerTitle,
-            { color: colors.textPrimary },
-          ]}
-        >
-          Account
-        </Text>
-
-        <View style={{ width: 24 }} />
-      </View>
-
-      <ScrollView
-        contentContainerStyle={[
-          styles.container,
-          {
-            paddingBottom: insets.bottom + spacing.xl,
-          },
-        ]}
-      >
-        {/* -------- Account -------- */}
-        <Card>
-          <Section title="Profile">
-            <Field label="Name">
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                    color: colors.textPrimary,
-                  },
-                ]}
-                placeholder="Your name"
-                placeholderTextColor={colors.textSecondary}
-              />
-            </Field>
-
-            <Field label="Email">
-              <Text style={{ color: colors.textSecondary }}>
-                {email}
-              </Text>
-            </Field>
-
-            <PrimaryButton
-              title="Save changes"
-              onPress={saveProfile}
-              loading={saving}
-            />
-          </Section>
-        </Card>
-
-        {/* -------- Sessions -------- */}
-        <Card>
-          <Section title="Active sessions">
-            {sessions.length === 0 ? (
-              <Text style={{ color: colors.textSecondary }}>
-                This is your only session.
-              </Text>
-            ) : (
-              sessions.map(s => (
-                <View
-                  key={s.id}
-                  style={[
-                    styles.session,
-                    {
-                      borderColor: colors.border,
-                      backgroundColor: colors.surface,
-                    },
-                  ]}
-                >
-                  <View>
-                    <Text style={{ color: colors.textPrimary }}>
-                      {s.device || 'Unknown device'}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: colors.textSecondary,
-                      }}
-                    >
-                      {s.ip}
-                    </Text>
-                  </View>
-
-                  <Pressable
-                    onPress={() => terminateSession(s.id)}
-                  >
-                    <Text style={{ color: colors.error }}>
-                      Log out
-                    </Text>
-                  </Pressable>
-                </View>
-              ))
-            )}
-          </Section>
-        </Card>
-
-        {/* -------- Data -------- */}
-        <Card>
-          <Section title="Your data">
-            <Pressable
-              onPress={profileService.exportData}
-            >
-              <Text style={{ color: colors.textPrimary }}>
-                Export my data
-              </Text>
-            </Pressable>
-          </Section>
-        </Card>
-
-        {/* -------- Danger -------- */}
-        <Card danger>
-          <Section title="Danger zone">
-            <Pressable onPress={deleteAccount}>
-              <Text style={{ color: colors.error }}>
-                Delete account
-              </Text>
-            </Pressable>
-          </Section>
-        </Card>
-      </ScrollView>
-    </View>
-  )
-}
-
-/* ================= UI Helpers ================= */
-
-const Card = ({
-  children,
-  danger,
-}: {
-  children: React.ReactNode
-  danger?: boolean
-}) => {
-  const { theme } = useTheme()
-  const colors = theme === 'dark' ? darkColors : lightColors
-
-  return (
-    <View
+    <SafeAreaView
       style={[
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: danger
-            ? colors.error
-            : colors.border,
-        },
+        styles.safe,
+        { backgroundColor: colors.background },
       ]}
     >
-      {children}
-    </View>
+      {/* ---------- Header ---------- */}
+      <View style={styles.header}>
+              <ProfileHeader loading={loading} />
+        </View>
+      {/* ---------- Content ---------- */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingBottom:
+              spacing.xxl + 80, // room for floating pill bar
+          },
+        ]}
+      >
+        <Card colors={colors}>
+          <Field label="Name" colors={colors}>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
+            />
+          </Field>
+
+          <Field label="Email" colors={colors}>
+            <Text style={{ color: colors.textSecondary }}>
+              {email}
+            </Text>
+          </Field>
+
+          <PrimaryButton
+            title="Save changes"
+            onPress={saveProfile}
+            loading={saving}
+          />
+        </Card>
+
+        <Card colors={colors} title="Active sessions">
+          {sessions.length === 0 ? (
+            <Text style={{ color: colors.textSecondary }}>
+              This is your only session.
+            </Text>
+          ) : (
+            sessions.map(s => (
+              <View
+                key={s.id}
+                style={[
+                  styles.session,
+                  { borderColor: colors.border },
+                ]}
+              >
+                <View>
+                  <Text style={{ color: colors.textPrimary }}>
+                    {s.device || 'Unknown device'}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: colors.textSecondary,
+                    }}
+                  >
+                    {s.ip}
+                  </Text>
+                </View>
+
+                <Pressable
+                  onPress={() => terminateSession(s.id)}
+                >
+                  <Text style={{ color: '#ff4d4f' }}>
+                    Log out
+                  </Text>
+                </Pressable>
+              </View>
+            ))
+          )}
+        </Card>
+
+        <Card colors={colors} title="Your data">
+          <Pressable onPress={profileService.exportData}>
+            <Text style={{ color: colors.textPrimary }}>
+              Export my data
+            </Text>
+          </Pressable>
+        </Card>
+
+        <Card colors={colors} danger title="Danger zone">
+          <Pressable onPress={deleteAccount}>
+            <Text style={{ color: '#ff4d4f' }}>
+              Delete account
+            </Text>
+          </Pressable>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
 
-const Section = ({
+/* ================= UI Components ================= */
+
+const Card = ({
   title,
   children,
-}: {
-  title: string
-  children: React.ReactNode
-}) => (
-  <View style={{ gap: spacing.md }}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {children}
+  colors,
+  danger,
+}: any) => (
+  <View
+    style={[
+      styles.card,
+      {
+        backgroundColor: colors.surface,
+        borderColor: danger
+          ? 'rgba(255,77,79,0.4)'
+          : colors.border,
+      },
+    ]}
+  >
+    {title && (
+      <Text
+        style={[
+          styles.cardTitle,
+          {
+            color: danger
+              ? '#ff4d4f'
+              : colors.textSecondary,
+          },
+        ]}
+      >
+        {title}
+      </Text>
+    )}
+    <View style={{ gap: spacing.md }}>{children}</View>
   </View>
 )
 
 const Field = ({
   label,
   children,
-}: {
-  label: string
-  children: React.ReactNode
-}) => (
+  colors,
+}: any) => (
   <View style={{ gap: 6 }}>
-    <Text style={styles.fieldLabel}>{label}</Text>
+    <Text
+      style={{
+        fontSize: 12,
+        color: colors.textSecondary,
+      }}
+    >
+      {label}
+    </Text>
     {children}
   </View>
 )
@@ -317,44 +286,42 @@ const Field = ({
 /* ================= Styles ================= */
 
 const styles = StyleSheet.create({
-  header: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
+ safe: {
     flex: 1,
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
   },
-  container: {
-    padding: spacing.lg,
+
+  header: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
+  },
+
+  content: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
     gap: spacing.lg,
   },
+
   card: {
     borderWidth: 1,
     borderRadius: 16,
     padding: spacing.lg,
+    gap: spacing.md,
   },
-  sectionTitle: {
+
+  cardTitle: {
     fontSize: 12,
-    letterSpacing: 1.2,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
-    opacity: 0.6,
   },
-  fieldLabel: {
-    fontSize: 12,
-    opacity: 0.7,
-  },
+
   input: {
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
+
   session: {
     borderWidth: 1,
     borderRadius: 12,
