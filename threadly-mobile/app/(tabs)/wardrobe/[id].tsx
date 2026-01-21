@@ -23,6 +23,7 @@ import { useTheme } from '@/src/theme/ThemeProvider'
 import { lightColors, darkColors } from '@/src/theme/colors'
 import { spacing } from '@/src/theme/spacing'
 import { typography } from '@/src/theme/typography'
+import EditWardrobeHeader from '@/src/components/wardrobe/EditWardrobeHeader'
 
 const TAB_BAR_HEIGHT = 64
 
@@ -177,27 +178,14 @@ export default function EditWardrobeItemScreen() {
       >
         <Animated.View entering={FadeInUp.duration(400)} style={styles.wrap}>
   {/* Top row */}
-  <View style={styles.row}>
-    <Pressable
-      onPress={async () => {
-        await Haptics.selectionAsync()
-        router.back()
-      }}
-      hitSlop={8}
-      style={styles.back}
+   <View
+      style={[
+        styles.header,
+        { paddingTop: insets.top + spacing.sm },
+      ]}
     >
-      <Ionicons
-        name="chevron-back"
-        size={22}
-        color={colors.textPrimary}
-      />
-    </Pressable>
-
-    <Text style={[styles.title, { color: colors.textPrimary }]}>
-      Edit wardrobe item
-    </Text>
-  </View>
-
+      <EditWardrobeHeader />
+    </View>
   {/* Subtitle */}
   <Text
     style={[

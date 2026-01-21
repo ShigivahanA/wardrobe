@@ -1,4 +1,4 @@
-import { View, TextInput, StyleSheet, useColorScheme } from 'react-native'
+import { View, TextInput, StyleSheet } from 'react-native'
 import { useRef, useEffect, useState } from 'react'
 import Animated, {
   useAnimatedStyle,
@@ -7,8 +7,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics'
-
 import { lightColors, darkColors } from '../../theme/colors'
+import { useTheme } from '@/src/theme/ThemeProvider'
 
 type Props = {
   value: string
@@ -25,8 +25,8 @@ export default function OtpInput({
   disabled,
   error,
 }: Props) {
-  const scheme = useColorScheme()
-  const colors = scheme === 'dark' ? darkColors : lightColors
+  const { theme } = useTheme()
+  const colors = theme === 'dark' ? darkColors : lightColors
 
   const inputs = useRef<TextInput[]>([])
   const shake = useSharedValue(0)

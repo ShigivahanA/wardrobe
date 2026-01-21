@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView ,useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
@@ -19,10 +19,11 @@ type Props = {
 }
 
 export default function LegalScreen({ title, sections }: Props) {
+  const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const colors = theme === 'dark' ? darkColors : lightColors
   const router = useRouter()
-
+  const TAB_BAR_HEIGHT = 64
   const goBack = async () => {
     await Haptics.selectionAsync()
     router.back()
@@ -33,7 +34,7 @@ export default function LegalScreen({ title, sections }: Props) {
       style={[styles.safe, { backgroundColor: colors.background }]}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header]}>
         <Pressable onPress={goBack} hitSlop={8} style={styles.back}>
           <Ionicons
             name="chevron-back"
@@ -51,7 +52,8 @@ export default function LegalScreen({ title, sections }: Props) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: spacing.xxl },
+          { paddingBottom:
+        spacing.xl + insets.bottom + TAB_BAR_HEIGHT, },
         ]}
       >
         <Text
