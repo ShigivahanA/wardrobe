@@ -6,6 +6,8 @@ import Animated, {
 } from 'react-native-reanimated'
 import AnimatedPairingItem from '@/src/components/pairing/AnimatedPairingItem'
 import { spacing } from '@/src/theme/spacing'
+import { useTheme } from '@/src/theme/ThemeProvider'
+import { lightColors, darkColors } from '@/src/theme/colors'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
@@ -26,6 +28,9 @@ export default function PairingRow({ title, items, onChange }: Props) {
   const listRef = useRef<FlatList>(null)
   const scrollX = useSharedValue(0)
 
+  const { theme } = useTheme()
+  const colors = theme === 'dark' ? darkColors : lightColors
+
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollX.value = event.contentOffset.x
@@ -38,7 +43,12 @@ export default function PairingRow({ title, items, onChange }: Props) {
 
   if (!items.length) {
     return (
-      <Text style={styles.empty}>
+      <Text
+        style={[
+          styles.empty,
+          { color: colors.textSecondary },
+        ]}
+      >
         No {title.toLowerCase()} items
       </Text>
     )
@@ -46,7 +56,14 @@ export default function PairingRow({ title, items, onChange }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.label}>{title}</Text>
+      <Text
+        style={[
+          styles.label,
+          { color: colors.textSecondary },
+        ]}
+      >
+        {title}
+      </Text>
 
       <AnimatedFlatList
         ref={listRef}
@@ -100,11 +117,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     letterSpacing: 1.5,
     marginBottom: spacing.xs,
-    opacity: 0.6,
+    opacity: 0.7,
   },
   empty: {
     textAlign: 'center',
-    opacity: 0.5,
+    justifyContent: 'center',
     marginBottom: spacing.lg,
+    fontSize: 13,
+    opacity: 0.7,
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
   },
 })

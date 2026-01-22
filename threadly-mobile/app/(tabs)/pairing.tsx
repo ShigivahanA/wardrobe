@@ -54,17 +54,18 @@ export default function PairingScreen() {
 
   return (
     <ScrollView
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={[
-        styles.container,
-        {
-          backgroundColor: colors.background,
-          paddingTop: insets.top + spacing.sm,
-          paddingBottom: insets.bottom + TAB_BAR_HEIGHT + spacing.xl,
-        },
-      ]}
-    >
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  contentContainerStyle={[
+    styles.container,
+    {
+      flexGrow: 1, // ✅ CRITICAL
+      backgroundColor: colors.background,
+      paddingTop: insets.top + spacing.sm,
+      paddingBottom: insets.bottom + TAB_BAR_HEIGHT,
+    },
+  ]}
+>
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>

@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, Switch, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Switch } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/src/theme/ThemeProvider'
 import { spacing } from '../../theme/spacing'
 import { lightColors, darkColors } from '../../theme/colors'
 import Field from '../auth/Field'
 import { CategorySelector } from './CategorySelector'
-
+import ChipSelector from '@/src/components/upload/ChipSelector'
 import type {
   WardrobeCategory,
   WardrobeOccasion,
@@ -92,77 +92,29 @@ export default function MetadataForm({ meta, setMeta }: Props) {
 
       {/* Occasion */}
       <Text style={[styles.label, { color: colors.textSecondary }]}>
-        Occasion
-      </Text>
-      <View style={styles.row}>
-        {OCCASIONS.map((o) => {
-          const active = meta.occasion === o
-          return (
-            <Pressable
-              key={o}
-              onPress={() => pickChip('occasion', o)}
-              style={({ pressed }) => [
-                styles.chip,
-                {
-                  backgroundColor: active
-                    ? colors.textPrimary
-                    : colors.surface,
-                  borderColor: colors.border,
-                  opacity: pressed ? 0.8 : 1,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  color: active
-                    ? colors.background
-                    : colors.textSecondary,
-                  fontWeight: active ? '600' : '500',
-                }}
-              >
-                {o}
-              </Text>
-            </Pressable>
-          )
-        })}
-      </View>
+  Occasion
+</Text>
+
+<ChipSelector<WardrobeOccasion>
+  value={meta.occasion}
+  options={OCCASIONS}
+  onChange={(occasion) =>
+    setMeta({ ...meta, occasion })
+  }
+/>
 
       {/* Season */}
       <Text style={[styles.label, { color: colors.textSecondary }]}>
-        Season
-      </Text>
-      <View style={styles.row}>
-        {SEASONS.map((s) => {
-          const active = meta.season === s
-          return (
-            <Pressable
-              key={s}
-              onPress={() => pickChip('season', s)}
-              style={({ pressed }) => [
-                styles.chip,
-                {
-                  backgroundColor: active
-                    ? colors.textPrimary
-                    : colors.surface,
-                  borderColor: colors.border,
-                  opacity: pressed ? 0.8 : 1,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  color: active
-                    ? colors.background
-                    : colors.textSecondary,
-                  fontWeight: active ? '600' : '500',
-                }}
-              >
-                {s}
-              </Text>
-            </Pressable>
-          )
-        })}
-      </View>
+  Season
+</Text>
+
+<ChipSelector<WardrobeSeason>
+  value={meta.season}
+  options={SEASONS}
+  onChange={(season) =>
+    setMeta({ ...meta, season })
+  }
+/>
 
       {/* Favorite */}
       <View style={styles.favoriteRow}>

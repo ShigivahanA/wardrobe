@@ -19,6 +19,7 @@ import ImageStage from '@/src/components/upload/ImageStage'
 import { useTheme } from '@/src/theme/ThemeProvider'
 import ExtractedColors from '@/src/components/upload/ExtractedColors'
 import ManualColorPicker from '@/src/components/upload/ManualColorPicker'
+
 type UploadMetaDraft = {
   category: WardrobeCategory | null
   size: string

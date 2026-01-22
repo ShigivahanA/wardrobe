@@ -76,49 +76,51 @@ useEffect(() => {
 
 
   return (
-    <FlatList
-      data={items}
-      keyExtractor={(item) => item._id}
-      numColumns={2}
-      showsVerticalScrollIndicator={false}
-      columnWrapperStyle={styles.row}
-      contentContainerStyle={[
-        styles.list,
-        {
-          paddingTop: insets.top + spacing.sm,
-          paddingBottom:
-            insets.bottom + TAB_BAR_HEIGHT + spacing.lg,
-          backgroundColor: colors.background,
-        },
-      ]}
-      ListHeaderComponent={
-        <View style={styles.header}>
-          <WardrobeHeader count={items.length} />
+  <FlatList
+    data={items}
+    keyExtractor={(item) => item._id}
+    numColumns={2}
+    showsVerticalScrollIndicator={false}
+    columnWrapperStyle={styles.row}
+    contentContainerStyle={[
+      styles.list,
+      {
+        flexGrow: 1, // ✅ REQUIRED for full-height empty state
+        paddingTop: insets.top + spacing.sm,
+        paddingBottom:
+          insets.bottom + TAB_BAR_HEIGHT + spacing.lg,
+        backgroundColor: colors.background,
+      },
+    ]}
+    ListHeaderComponent={
+      <View style={styles.header}>
+        <WardrobeHeader count={items.length} />
 
-          <WardrobeFilters
-            value={category}
-            onChange={setCategory}
-            onReset={() => setCategory(null)}
-          />
+        <WardrobeFilters
+          value={category}
+          onChange={setCategory}
+          onReset={() => setCategory(null)}
+        />
 
-          {loading && items.length === 0 && <WardrobeSkeleton />}
-
-          {!loading && items.length === 0 && (
-            <EmptyState onReset={() => setCategory(null)} />
-          )}
-        </View>
-      }
-      renderItem={({ item }) => (
-        <Animated.View entering={FadeIn.duration(200)}>
-          <WardrobeCard
-            item={item}
-            width={CARD_WIDTH}
-            onToggleFavorite={toggleFavorite}
-          />
-        </Animated.View>
-      )}
-    />
-  )
+        {loading && items.length === 0 && <WardrobeSkeleton />}
+      </View>
+    }
+    ListEmptyComponent={
+      !loading ? (
+        <EmptyState onReset={() => setCategory(null)} />
+      ) : null
+    }
+    renderItem={({ item }) => (
+      <Animated.View entering={FadeIn.duration(200)}>
+        <WardrobeCard
+          item={item}
+          width={CARD_WIDTH}
+          onToggleFavorite={toggleFavorite}
+        />
+      </Animated.View>
+    )}
+  />
+)
 }
 
 const styles = StyleSheet.create({

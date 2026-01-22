@@ -186,18 +186,6 @@ export default function EditWardrobeItemScreen() {
     >
       <EditWardrobeHeader />
     </View>
-  {/* Subtitle */}
-  <Text
-    style={[
-      styles.sub,
-      {
-        color: colors.textSecondary,
-        opacity: theme === 'dark' ? 0.9 : 0.75,
-      },
-    ]}
-  >
-    Update details for this item
-  </Text>
 </Animated.View>
 
 
