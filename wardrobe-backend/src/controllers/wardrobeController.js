@@ -56,7 +56,7 @@ export const addItem = asyncHandler(async (req, res, next) => {
  */
 export const getItems = asyncHandler(async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit, 10) || 20, 50)
-  const { cursor, category, favorite } = req.query
+  const { cursor, category, favorite, season, occasion } = req.query
 
   const query = {
     userId: req.user.id
@@ -81,6 +81,15 @@ export const getItems = asyncHandler(async (req, res) => {
   if (cursor) {
     query._id = { $lt: cursor }
   }
+
+  if (occasion) {
+  query.occasion = { $in: occasion.split(',') }
+}
+
+if (season) {
+  query.season = { $in: season.split(',') }
+}
+
 
   const items = await WardrobeItem.find(query)
     .sort({ _id: -1 })

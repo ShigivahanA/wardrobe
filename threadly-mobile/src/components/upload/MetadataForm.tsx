@@ -34,8 +34,8 @@ export type UploadMetaDraft = {
   size: string
   colors: string[]
   brand: string
-  occasion: WardrobeOccasion
-  season: WardrobeSeason
+  occasion: WardrobeOccasion[]   // ✅ multi-select
+  season: WardrobeSeason[]       // ✅ multi-select
   isFavorite: boolean
   tags: string[]
   notes: string
@@ -53,12 +53,18 @@ export default function MetadataForm({ meta, setMeta }: Props) {
   const { theme } = useTheme()
   const colors = theme === 'dark' ? darkColors : lightColors
 
-  const pickChip = async <T extends string>(
-    key: keyof UploadMetaDraft,
+  const toggleArrayValue = async <T extends string>(
+    key: 'occasion' | 'season',
     value: T
   ) => {
     await Haptics.selectionAsync()
-    setMeta({ ...meta, [key]: value })
+
+    setMeta({
+      ...meta,
+      [key]: meta[key].includes(value)
+        ? meta[key].filter(v => v !== value)
+        : [...meta[key], value],
+    })
   }
 
   return (
@@ -90,31 +96,33 @@ export default function MetadataForm({ meta, setMeta }: Props) {
         }
       />
 
-      {/* Occasion */}
+      {/* Occasion (multi-select) */}
       <Text style={[styles.label, { color: colors.textSecondary }]}>
-  Occasion
-</Text>
+        Occasion
+      </Text>
 
-<ChipSelector<WardrobeOccasion>
-  value={meta.occasion}
-  options={OCCASIONS}
-  onChange={(occasion) =>
-    setMeta({ ...meta, occasion })
-  }
-/>
+      <ChipSelector<WardrobeOccasion>
+        value={meta.occasion}
+        options={OCCASIONS}
+        multiple
+        onChange={(occasion) =>
+          toggleArrayValue('occasion', occasion)
+        }
+      />
 
-      {/* Season */}
+      {/* Season (multi-select) */}
       <Text style={[styles.label, { color: colors.textSecondary }]}>
-  Season
-</Text>
+        Season
+      </Text>
 
-<ChipSelector<WardrobeSeason>
-  value={meta.season}
-  options={SEASONS}
-  onChange={(season) =>
-    setMeta({ ...meta, season })
-  }
-/>
+      <ChipSelector<WardrobeSeason>
+        value={meta.season}
+        options={SEASONS}
+        multiple
+        onChange={(season) =>
+          toggleArrayValue('season', season)
+        }
+      />
 
       {/* Favorite */}
       <View style={styles.favoriteRow}>
@@ -160,21 +168,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     marginBottom: 4,
-  },
-
-  row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-
-  chip: {
-    minHeight: 36,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
   favoriteRow: {

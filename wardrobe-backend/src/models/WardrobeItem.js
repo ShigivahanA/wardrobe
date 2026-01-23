@@ -56,17 +56,36 @@ const wardrobeItemSchema = new mongoose.Schema(
     },
 
     occasion: {
-      type: String,
-      enum: ['casual', 'formal', 'party', 'ethnic', 'sports', 'other'],
-      default: 'other'
-    },
+  type: [String],
+  enum: [
+  'beach',
+  'casual',
+  'ethnic',
+  'festival',
+  'formal',
+  'party',
+  'sports',
+  'travel',
+  'work',
+  'other',
+],
+  default: [],
+  index: true
+},
 
-    season: {
-      type: String,
-      enum: ['summer', 'winter', 'all'],
-      default: 'all'
-    },
-
+season: {
+  type: [String],
+  enum: [
+  'autumn',
+  'monsoon',
+  'spring',
+  'summer',
+  'winter',
+  'all',
+],
+  default: [],
+  index: true
+},
     /* ======================
        UX helpers
     ====================== */

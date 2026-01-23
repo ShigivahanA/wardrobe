@@ -25,12 +25,13 @@ type UploadMetaDraft = {
   size: string
   colors: string[]
   brand: string
-  occasion: WardrobeOccasion
-  season: WardrobeSeason
+  occasion: WardrobeOccasion[]   // ✅ array
+  season: WardrobeSeason[]       // ✅ array
   isFavorite: boolean
   tags: string[]
   notes: string
 }
+
 
 
 export default function UploadScreen() {
@@ -49,8 +50,8 @@ export default function UploadScreen() {
     size: '',
     colors: [],
     brand: '',
-    occasion: 'other',
-    season: 'all',
+    occasion: [],
+    season: [],
     isFavorite: false,
     tags: [],
     notes: '',
@@ -81,6 +82,7 @@ const ensureCameraPermission = async () => {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,     // ✅ enables crop
       quality: 0.9,
     })
 
@@ -101,6 +103,7 @@ const pickFromCamera = async () => {
 
     const result = await ImagePicker.launchCameraAsync({
       quality: 0.9,
+      allowsEditing: true,
     })
 
     if (!result.canceled) {
@@ -195,8 +198,8 @@ const pickFromCamera = async () => {
       size: '',
       colors: [],
       brand: '',
-      occasion: 'other',
-      season: 'all',
+      occasion: [],
+      season: [],
       isFavorite: false,
       tags: [],
       notes: '',
