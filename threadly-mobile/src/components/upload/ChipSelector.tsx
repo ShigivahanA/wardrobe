@@ -1,4 +1,3 @@
-// components/common/ChipSelector.tsx
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import * as Haptics from 'expo-haptics'
 import { useTheme } from '@/src/theme/ThemeProvider'
@@ -6,7 +5,7 @@ import { lightColors, darkColors } from '@/src/theme/colors'
 import { spacing } from '@/src/theme/spacing'
 
 type Props<T extends string> = {
-  value: T
+  value: T[]                 // ✅ array
   options: T[]
   onChange: (v: T) => void
 }
@@ -22,7 +21,7 @@ export default function ChipSelector<T extends string>({
   return (
     <View style={styles.wrap}>
       {options.map(option => {
-        const active = option === value
+        const active = value.includes(option) // ✅ FIXED
 
         return (
           <Pressable

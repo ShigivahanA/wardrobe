@@ -12,30 +12,43 @@ import type {
   WardrobeSeason,
 } from '../../services/wardrobeService'
 
-/* ======================
-   Constants
-====================== */
+/* ======================================================
+   Constants (MUST MATCH BACKEND ENUMS EXACTLY)
+====================================================== */
+
 const OCCASIONS: WardrobeOccasion[] = [
+  'beach',
   'casual',
-  'formal',
-  'party',
   'ethnic',
-  'sports',
+  'festival',
+  'formal',
   'other',
+  'party',
+  'sports',
+  'travel',
+  'work',
 ]
 
-const SEASONS: WardrobeSeason[] = ['summer', 'winter', 'all']
+const SEASONS: WardrobeSeason[] = [
+  'all',
+  'autumn',
+  'monsoon',
+  'spring',
+  'summer',
+  'winter',
+]
 
-/* ======================
+/* ======================================================
    Types
-====================== */
+====================================================== */
+
 export type UploadMetaDraft = {
   category: WardrobeCategory | null
   size: string
   colors: string[]
   brand: string
-  occasion: WardrobeOccasion[]   // ✅ multi-select
-  season: WardrobeSeason[]       // ✅ multi-select
+  occasion: WardrobeOccasion[]
+  season: WardrobeSeason[]
   isFavorite: boolean
   tags: string[]
   notes: string
@@ -46,18 +59,40 @@ type Props = {
   setMeta: (v: UploadMetaDraft) => void
 }
 
-/* ======================
+/* ======================================================
    Component
-====================== */
+====================================================== */
+
 export default function MetadataForm({ meta, setMeta }: Props) {
   const { theme } = useTheme()
   const colors = theme === 'dark' ? darkColors : lightColors
 
+  /**
+   * Toggle helper for multi-select arrays
+   * Includes special handling for `season: ['all']`
+   */
   const toggleArrayValue = async <T extends string>(
     key: 'occasion' | 'season',
     value: T
   ) => {
     await Haptics.selectionAsync()
+
+    // Special rule: season = ['all'] must be exclusive
+    if (key === 'season' && value === 'all') {
+      setMeta({
+        ...meta,
+        season: ['all'],
+      })
+      return
+    }
+
+    if (key === 'season' && meta.season.includes('all')) {
+      setMeta({
+        ...meta,
+        season: [value as WardrobeSeason],
+      })
+      return
+    }
 
     setMeta({
       ...meta,
@@ -69,34 +104,42 @@ export default function MetadataForm({ meta, setMeta }: Props) {
 
   return (
     <View style={styles.wrap}>
-      {/* Category */}
+      {/* ======================
+          Category
+      ====================== */}
       <CategorySelector
         value={meta.category}
-        onSelect={(c) =>
-          setMeta({ ...meta, category: c })
+        onSelect={(category) =>
+          setMeta({ ...meta, category })
         }
       />
 
-      {/* Size */}
+      {/* ======================
+          Size
+      ====================== */}
       <Field
         label="Size"
         value={meta.size}
-        onChangeText={(v) =>
-          setMeta({ ...meta, size: v })
+        onChangeText={(size) =>
+          setMeta({ ...meta, size })
         }
         placeholder="M / 32 / XL"
       />
 
-      {/* Brand */}
+      {/* ======================
+          Brand
+      ====================== */}
       <Field
         label="Brand"
         value={meta.brand}
-        onChangeText={(v) =>
-          setMeta({ ...meta, brand: v })
+        onChangeText={(brand) =>
+          setMeta({ ...meta, brand })
         }
       />
 
-      {/* Occasion (multi-select) */}
+      {/* ======================
+          Occasion (Multi-select)
+      ====================== */}
       <Text style={[styles.label, { color: colors.textSecondary }]}>
         Occasion
       </Text>
@@ -104,13 +147,14 @@ export default function MetadataForm({ meta, setMeta }: Props) {
       <ChipSelector<WardrobeOccasion>
         value={meta.occasion}
         options={OCCASIONS}
-        multiple
         onChange={(occasion) =>
           toggleArrayValue('occasion', occasion)
         }
       />
 
-      {/* Season (multi-select) */}
+      {/* ======================
+          Season (Multi-select)
+      ====================== */}
       <Text style={[styles.label, { color: colors.textSecondary }]}>
         Season
       </Text>
@@ -118,21 +162,22 @@ export default function MetadataForm({ meta, setMeta }: Props) {
       <ChipSelector<WardrobeSeason>
         value={meta.season}
         options={SEASONS}
-        multiple
         onChange={(season) =>
           toggleArrayValue('season', season)
         }
       />
 
-      {/* Favorite */}
+      {/* ======================
+          Favorite
+      ====================== */}
       <View style={styles.favoriteRow}>
         <Text style={{ color: colors.textPrimary }}>
           Mark as favorite
         </Text>
         <Switch
           value={meta.isFavorite}
-          onValueChange={(v) =>
-            setMeta({ ...meta, isFavorite: v })
+          onValueChange={(isFavorite) =>
+            setMeta({ ...meta, isFavorite })
           }
           trackColor={{
             false: colors.border,
@@ -142,12 +187,14 @@ export default function MetadataForm({ meta, setMeta }: Props) {
         />
       </View>
 
-      {/* Notes */}
+      {/* ======================
+          Notes
+      ====================== */}
       <Field
         label="Notes"
         value={meta.notes}
-        onChangeText={(v) =>
-          setMeta({ ...meta, notes: v })
+        onChangeText={(notes) =>
+          setMeta({ ...meta, notes })
         }
         multiline
         style={styles.notes}
@@ -156,9 +203,10 @@ export default function MetadataForm({ meta, setMeta }: Props) {
   )
 }
 
-/* ======================
+/* ======================================================
    Styles
-====================== */
+====================================================== */
+
 const styles = StyleSheet.create({
   wrap: {
     gap: spacing.lg,

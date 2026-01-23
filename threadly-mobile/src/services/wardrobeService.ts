@@ -12,19 +12,25 @@ export type WardrobeCategory =
   | 'shoes'
   | 'other'
 
-  export type WardrobeOccasion =
+export type WardrobeOccasion =
+  | 'beach'
   | 'casual'
-  | 'formal'
-  | 'party'
   | 'ethnic'
-  | 'sports'
+  | 'festival'
+  | 'formal'
   | 'other'
+  | 'party'
+  | 'sports'
+  | 'travel'
+  | 'work'
 
 export type WardrobeSeason =
+  | 'all'
+  | 'autumn'
+  | 'monsoon'
+  | 'spring'
   | 'summer'
   | 'winter'
-  | 'all'
-
 
 export interface AddWardrobeItemPayload {
   imageUrl: string
@@ -33,8 +39,11 @@ export interface AddWardrobeItemPayload {
   colors?: string[]
   size?: string
   brand?: string
-  occasion?: 'casual' | 'formal' | 'party' | 'ethnic' | 'sports' | 'other'
-  season?: 'summer' | 'winter' | 'all'
+
+  // ✅ UPDATED: multi-select
+  occasion: WardrobeOccasion[]
+  season: WardrobeSeason[]
+
   isFavorite?: boolean
   tags?: string[]
   notes?: string
@@ -75,7 +84,10 @@ const deleteItem = async (id: string) => {
   })
 }
 
-const updateItem = async (id: string, payload: Partial<AddWardrobeItemPayload>) => {
+const updateItem = async (
+  id: string,
+  payload: Partial<AddWardrobeItemPayload>
+) => {
   const res = await request(`/wardrobe/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
@@ -93,7 +105,7 @@ const toggleFavorite = async (id: string) => {
 }
 
 /* ======================
-   Default export (CRITICAL)
+   Default export
 ====================== */
 const wardrobeService = {
   addItem,

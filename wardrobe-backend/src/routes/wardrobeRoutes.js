@@ -17,52 +17,127 @@ const addItemSchema = z.object({
   body: z.object({
     imageUrl: z.string().url(),
     imagePublicId: z.string(),
+
     category: z.enum([
-      'shirt',
       'tshirt',
-      'pant',
-      'jeans',
+      'shirt',
+      'top',
+      'blouse',
+      'tank_top',
+      'sweater',
+      'hoodie',
       'jacket',
+      'coat',
+      'blazer',
+      'jeans',
+      'pants',
+      'shorts',
+      'skirt',
+      'leggings',
+      'joggers',
+      'dress',
+      'jumpsuit',
+      'romper',
+      'overalls',
+      'kurta',
+      'saree',
+      'lehenga',
+      'salwar',
+      'dhoti',
       'shoes',
-      'other'
+      'sneakers',
+      'sandals',
+      'heels',
+      'flats',
+      'boots',
+      'school_uniform',
+      'sleepwear',
+      'onesie',
+      'innerwear',
+      'nightwear',
+      'loungewear',
+      'cap',
+      'hat',
+      'scarf',
+      'belt',
+      'socks',
+      'other',
     ]),
+
     colors: z.array(z.string()).optional(),
     size: z.string().optional(),
     brand: z.string().optional(),
-    occasion: z.enum([
-      'casual',
-      'formal',
-      'party',
-      'ethnic',
-      'sports',
-      'other'
-    ]).optional(),
-    season: z.enum(['summer', 'winter', 'all']).optional(),
+
+    // ✅ ARRAYS
+    occasion: z.array(
+      z.enum([
+        'beach',
+        'casual',
+        'ethnic',
+        'festival',
+        'formal',
+        'party',
+        'sports',
+        'travel',
+        'work',
+        'other',
+      ])
+    ).optional(),
+
+    season: z.array(
+      z.enum([
+        'all',
+        'autumn',
+        'monsoon',
+        'spring',
+        'summer',
+        'winter',
+      ])
+    ).optional(),
+
     isFavorite: z.boolean().optional(),
     tags: z.array(z.string()).optional(),
-    notes: z.string().max(500).optional()
-  })
+    notes: z.string().max(500).optional(),
+  }),
 })
 
 const updateItemSchema = z.object({
   body: z.object({
     category: z.string().optional(),
     colors: z.array(z.string()).optional(),
-    season: z.enum(['summer', 'winter', 'all']).optional(),
     size: z.string().optional(),
     brand: z.string().optional(),
-    occasion: z.enum([
-      'casual',
-      'formal',
-      'party',
-      'ethnic',
-      'sports',
-      'other'
-    ]).optional(),
+
+    occasion: z.array(
+      z.enum([
+        'beach',
+        'casual',
+        'ethnic',
+        'festival',
+        'formal',
+        'party',
+        'sports',
+        'travel',
+        'work',
+        'other',
+      ])
+    ).optional(),
+
+    season: z.array(
+      z.enum([
+        'all',
+        'autumn',
+        'monsoon',
+        'spring',
+        'summer',
+        'winter',
+      ])
+    ).optional(),
+
     isFavorite: z.boolean().optional(),
     tags: z.array(z.string()).optional(),
-    notes: z.string().max(500).optional()
-  })
+    notes: z.string().max(500).optional(),
+  }),
 })
 
 

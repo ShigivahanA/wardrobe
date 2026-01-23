@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
+  TextInput,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as Haptics from 'expo-haptics'
@@ -14,6 +15,9 @@ import { lightColors, darkColors } from '../../theme/colors'
 import { spacing } from '../../theme/spacing'
 import { useTheme } from '@/src/theme/ThemeProvider'
 
+/* ======================================================
+   Categories (source of truth)
+====================================================== */
 const CATEGORIES: WardrobeCategory[] = [
   'tshirt',
   'shirt',
@@ -60,26 +64,63 @@ const CATEGORIES: WardrobeCategory[] = [
   'other',
 ]
 
+/* ======================================================
+   Props
+====================================================== */
 type Props = {
   value: WardrobeCategory | null
   onSelect: (c: WardrobeCategory) => void
 }
 
+/* ======================================================
+   Component
+====================================================== */
 export function CategorySelector({ value, onSelect }: Props) {
   const { theme } = useTheme()
   const colors = theme === 'dark' ? darkColors : lightColors
   const insets = useSafeAreaInsets()
+
   const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+
+  /* ======================
+     Alphabetical order (once)
+  ====================== */
+  const sortedCategories = useMemo(() => {
+    return [...CATEGORIES].sort((a, b) =>
+      a.localeCompare(b)
+    )
+  }, [])
+
+  const normalizedQuery = query.trim().toLowerCase()
+
+    const orderedCategories = useMemo(() => {
+    if (!normalizedQuery) return sortedCategories
+
+    const matches = sortedCategories.filter(c =>
+      c.replace(/_/g, ' ').toLowerCase().includes(normalizedQuery)
+    )
+
+    const nonMatches = sortedCategories.filter(c =>
+      !c.replace(/_/g, ' ').toLowerCase().includes(normalizedQuery)
+    )
+
+    return [...matches, ...nonMatches]
+  }, [normalizedQuery, sortedCategories])
+
 
   const handleSelect = async (c: WardrobeCategory) => {
     await Haptics.selectionAsync()
     onSelect(c)
+    setQuery('')
     setOpen(false)
   }
 
   return (
     <>
-      {/* Field */}
+      {/* ======================
+          Field
+      ====================== */}
       <Pressable
         onPress={() => setOpen(true)}
         style={[
@@ -105,44 +146,69 @@ export function CategorySelector({ value, onSelect }: Props) {
         <Text style={{ color: colors.textSecondary }}>▾</Text>
       </Pressable>
 
-      {/* Bottom Sheet */}
+      {/* ======================
+          Full Screen Modal
+      ====================== */}
       <Modal
         visible={open}
         animationType="slide"
-        transparent
         onRequestClose={() => setOpen(false)}
       >
-        {/* ✅ Backdrop must cover FULL screen */}
-        <Pressable
-          style={styles.backdrop}
-          onPress={() => setOpen(false)}
-        />
-
-        {/* ✅ Sheet only is height-limited */}
         <View
           style={[
-            styles.sheet,
+            styles.container,
             {
               backgroundColor: colors.background,
-              paddingBottom: insets.bottom + spacing.md,
+              paddingTop: insets.top + spacing.md,
+              paddingBottom: insets.bottom,
             },
           ]}
         >
-          <Text
-            style={[
-              styles.title,
-              { color: colors.textPrimary },
-            ]}
-          >
-            Choose category
-          </Text>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text
+              style={[
+                styles.title,
+                { color: colors.textPrimary },
+              ]}
+            >
+              Choose category
+            </Text>
 
+            <Pressable onPress={() => setOpen(false)}>
+              <Text style={{ color: colors.textSecondary }}>
+                Close
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Search */}
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search category"
+            placeholderTextColor={colors.textSecondary}
+            style={[
+              styles.search,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                color: colors.textPrimary,
+              },
+            ]}
+          />
+
+          {/* List */}
           <ScrollView
             showsVerticalScrollIndicator={false}
-            overScrollMode="never"
-            bounces={false}
+            keyboardShouldPersistTaps="handled"
           >
-            {CATEGORIES.map((c) => {
+            {orderedCategories.map((c) => {
+              const label = c.replace(/_/g, ' ')
+              const match =
+                normalizedQuery.length > 0 &&
+                label.toLowerCase().includes(normalizedQuery)
+
               const active = c === value
 
               return (
@@ -158,14 +224,16 @@ export function CategorySelector({ value, onSelect }: Props) {
                 >
                   <Text
                     style={{
-                      color: active
+                      color: match
+                        ? '#E53935' // 🔴 highlight match
+                        : active
                         ? colors.textPrimary
                         : colors.textSecondary,
-                      fontWeight: active ? '600' : '400',
+                      fontWeight: active || match ? '600' : '400',
                       textTransform: 'capitalize',
                     }}
                   >
-                    {c.replace(/_/g, ' ')}
+                    {label}
                   </Text>
                 </Pressable>
               )
@@ -177,9 +245,9 @@ export function CategorySelector({ value, onSelect }: Props) {
   )
 }
 
-/* ======================
+/* ======================================================
    Styles
-====================== */
+====================================================== */
 const styles = StyleSheet.create({
   field: {
     height: 48,
@@ -196,24 +264,30 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
 
-  /* ✅ FULL SCREEN backdrop */
-  backdrop: {
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    paddingHorizontal: spacing.lg,
   },
 
-  /* ✅ ONLY sheet is constrained */
-  sheet: {
-    maxHeight: '50%',
-    padding: spacing.lg,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
   },
 
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
+  },
+
+  search: {
+    height: 44,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: spacing.md,
     marginBottom: spacing.md,
+    fontSize: 14,
   },
 
   option: {
